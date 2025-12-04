@@ -1,0 +1,31 @@
+{
+    "name": "googleads/php-data-manager-samples",
+    "description": "Code samples for working with the Data Manager API and PHP.",
+    "type": "project",
+    "license": "Apache-2.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "%DATA_MANAGER_PHP_LIB%"
+        },
+        {
+            "type": "path",
+            "url": "../"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "googleads/data-manager": "^0.1.0",
+        "googleads/data-manager-util": "@dev"
+    },
+    "require-dev": {
+        "google/cloud-tools": "dev-main",
+        "squizlabs/php_codesniffer": "^3.5",
+        "friendsofphp/php-cs-fixer": "^3.46"
+    },
+    "scripts": {
+        "fix": "php-cs-fixer fix"
+    }
+}

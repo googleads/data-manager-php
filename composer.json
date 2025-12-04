@@ -1,0 +1,27 @@
+{
+    "name": "googleads/data-manager-util",
+    "description": "Utilities and code samples for working with the Data Manager API and PHP.",
+    "type": "library",
+    "version": "0.1.0",
+    "license": "Apache-2.0",
+    "autoload": {
+        "psr-4": {
+            "Google\\Ads\\DataManagerUtil\\": "src/Google/Ads/DataManagerUtil/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "google/cloud-tools": "dev-main",
+        "squizlabs/php_codesniffer": "^3.5",
+        "phpunit/phpunit": "^10.0",
+        "friendsofphp/php-cs-fixer": "^3.46"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "fix": "php-cs-fixer fix"
+    }
+}

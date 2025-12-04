@@ -1,0 +1,16 @@
+/vendor/
+/samples/vendor/
+/composer.lock
+/samples/composer.lock
+/.phpunit.result.cache
+/.php_cs.cache
+/.php-cs-fixer.cache
+/.idea/
+/.vscode/
+*.log
+*.sqlite
+.env
+.DS_Store
+/build/
+/cache/
+/tmp/
