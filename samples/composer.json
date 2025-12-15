@@ -8,10 +8,6 @@
     "repositories": [
         {
             "type": "path",
-            "url": "%DATA_MANAGER_PHP_LIB%"
-        },
-        {
-            "type": "path",
             "url": "../"
         }
     ],
