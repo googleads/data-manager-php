@@ -2,7 +2,7 @@
     "name": "googleads/data-manager-util",
     "description": "Utilities and code samples for working with the Data Manager API and PHP.",
     "type": "library",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "license": "Apache-2.0",
     "autoload": {
         "psr-4": {
