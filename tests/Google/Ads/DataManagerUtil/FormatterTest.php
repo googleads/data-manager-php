@@ -45,6 +45,9 @@ class FormatterTest extends TestCase
             'case normalized domain' => ['QuinnY@EXAMPLE.com', 'quinny@example.com'],
             'periods stripped from gmail.com' => ['Jefferson.Loves.hiking@gmail.com', 'jeffersonloveshiking@gmail.com'],
             'periods stripped from googlemail.com' => ['Jefferson.LOVES.Hiking@googlemail.com', 'jeffersonloveshiking@googlemail.com'],
+            'plus signs not stripped from non-google' => ['user.name+NYC@Example.com', 'user.name+nyc@example.com'],
+            'plus signs stripped from gmail.com' => ['Cloudy.SanFrancisco+shopping@gmail.com', 'cloudysanfrancisco@gmail.com'],
+            'plus signs stripped from googlemail.com' => ['Cloudy.SanFrancisco+shopping@googlemail.com', 'cloudysanfrancisco@googlemail.com'],
         ];
     }
 
