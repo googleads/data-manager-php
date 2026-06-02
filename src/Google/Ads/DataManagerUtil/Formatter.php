@@ -59,6 +59,9 @@ class Formatter
             // "Create variations of your email address" at:
             // https://support.google.com/a/users/answer/9282734
 
+            // Removes plus sign (+) and all characters that follow it.
+            $user = explode('+', $user)[0];
+
             // Removes all periods (.).
             $user = str_replace('.', '', $user);
             if (strlen($user) === 0) {
