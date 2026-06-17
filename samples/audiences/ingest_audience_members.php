@@ -37,57 +37,23 @@ use Google\Ads\DataManagerUtil\Formatter;
 use Google\ApiCore\ApiException;
 
 /**
- * Reads the comma-separated member data file.
+ * Reads the JSON member data file.
  *
- * @param string $csvFile The member data file. Expected format is one comma-separated row
- * per audience member, with a header row containing headers of the form
- * "email_..." or "phone_...".
+ * @param string $jsonFile The member data file. Expected format is a JSON array of
+ * objects, where each object can contain "emails" and "phoneNumbers" arrays.
  * @return array A list of associative arrays, each representing a member.
  */
-function readMemberDataFile(string $csvFile): array
+function readMemberData(string $jsonFile): array
 {
-    $members = [];
-    if (($handle = fopen($csvFile, 'r')) !== false) {
-        $header = fgetcsv($handle);
-        $lineNum = 0;
-        while (($row = fgetcsv($handle)) !== false) {
-            $lineNum++;
-            $member = [
-                'emails' => [],
-                'phone_numbers' => [],
-            ];
-            $rowData = array_combine($header, $row); // Combine header with row data
-
-            foreach ($rowData as $fieldName => $fieldValue) {
-                if ($fieldName === null || $fieldName === '') {
-                    // Ignores trailing field without a corresponding header.
-                    continue;
-                }
-                $fieldValue = trim($fieldValue);
-                if (strlen($fieldValue) === 0) {
-                    // Ignores blank/empty value.
-                    continue;
-                }
-
-                if (str_starts_with($fieldName, 'email_')) {
-                    $member['emails'][] = $fieldValue;
-                } elseif (str_starts_with($fieldName, 'phone_')) {
-                    $member['phone_numbers'][] = $fieldValue;
-                } else {
-                    error_log(sprintf('Ignoring unrecognized field: %s', $fieldName));
-                }
-            }
-            if (!empty($member['emails']) || !empty($member['phone_numbers'])) {
-                $members[] = $member;
-            } else {
-                error_log(sprintf('Ignoring line #%d. No data.', $lineNum));
-            }
-        }
-        fclose($handle);
-    } else {
-        throw new \RuntimeException(sprintf('Could not open CSV file: %s', $csvFile));
+    $content = file_get_contents($jsonFile);
+    if ($content === false) {
+        throw new \RuntimeException(sprintf('Could not read JSON file: %s', $jsonFile));
     }
-    return $members;
+    $data = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new \RuntimeException(sprintf('Error decoding JSON: %s', json_last_error_msg()));
+    }
+    return $data;
 }
 
 /**
@@ -96,7 +62,7 @@ function readMemberDataFile(string $csvFile): array
  * @param int $operatingAccountType The account type of the operating account.
  * @param string $operatingAccountId The ID of the operating account.
  * @param string $audienceId The ID of the destination audience.
- * @param string $csvFile The CSV file containing member data.
+ * @param string $jsonFile The JSON file containing member data.
  * @param bool $validateOnly Whether to enable validateOnly on the request.
  * @param int|null $loginAccountType The account type of the login account.
  * @param string|null $loginAccountId The ID of the login account.
@@ -107,7 +73,7 @@ function main(
     int $operatingAccountType,
     string $operatingAccountId,
     string $audienceId,
-    string $csvFile,
+    string $jsonFile,
     bool $validateOnly,
     ?int $loginAccountType = null,
     ?string $loginAccountId = null,
@@ -115,7 +81,7 @@ function main(
     ?string $linkedAccountId = null
 ): void {
     // Reads member data from the data file.
-    $memberRows = readMemberDataFile($csvFile);
+    $memberRows = readMemberData($jsonFile);
 
     // Gets an instance of the UserDataFormatter for normalizing and formatting the data.
     $formatter = new Formatter();
@@ -125,7 +91,8 @@ function main(
     foreach ($memberRows as $memberRow) {
         $identifiers = [];
         // Adds a UserIdentifier for each valid email address for the member.
-        foreach ($memberRow['emails'] as $email) {
+        $emails = $memberRow['emails'] ?? [];
+        foreach ($emails as $email) {
             try {
                 // Formats, hashes, and encodes the email address.
                 $processedEmail = $formatter->processEmailAddress($email, Encoding::Hex);
@@ -139,7 +106,8 @@ function main(
         }
 
         // Adds a UserIdentifier for each valid phone number for the member.
-        foreach ($memberRow['phone_numbers'] as $phone) {
+        $phoneNumbers = $memberRow['phoneNumbers'] ?? [];
+        foreach ($phoneNumbers as $phone) {
             try {
                 // Formats, hashes, and encodes the phone number.
                 $processedPhone = $formatter->processPhoneNumber($phone, Encoding::Hex);
@@ -200,6 +168,9 @@ function main(
     // Creates a client for the ingestion service.
     $client = new IngestionServiceClient();
     try {
+        // Logs the request.
+        echo "Request:\n" . json_encode(json_decode($request->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
+
         // Sends the request.
         $response = $client->ingestAudienceMembers($request);
         echo "Response:\n" . json_encode(json_decode($response->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
@@ -221,7 +192,7 @@ $options = getopt(
         'linked_account_type::',
         'linked_account_id::',
         'audience_id:',
-        'csv_file:',
+        'json_file:',
         'validate_only::'
     ]
 );
@@ -229,7 +200,7 @@ $options = getopt(
 $operatingAccountType = $options['operating_account_type'] ?? null;
 $operatingAccountId = $options['operating_account_id'] ?? null;
 $audienceId = $options['audience_id'] ?? null;
-$csvFile = $options['csv_file'] ?? null;
+$jsonFile = $options['json_file'] ?? null;
 
 // Only validates requests by default.
 $validateOnly = true;
@@ -243,12 +214,12 @@ if (array_key_exists('validate_only', $options)) {
     $validateOnly = ($value === 'true');
 }
 
-if (empty($operatingAccountType) || empty($operatingAccountId) || empty($audienceId) || empty($csvFile)) {
+if (empty($operatingAccountType) || empty($operatingAccountId) || empty($audienceId) || empty($jsonFile)) {
     echo 'Usage: php ingest_audience_members.php ' .
         '--operating_account_type=<account_type> ' .
         '--operating_account_id=<account_id> ' .
         '--audience_id=<audience_id> ' .
-        "--csv_file=<path_to_csv>\n" .
+        "--json_file=<path_to_json>\n" .
         'Optional: --login_account_type=<account_type> --login_account_id=<account_id> ' .
         '--linked_account_type=<account_type> --linked_account_id=<account_id> ' .
         "--validate_only=<true|false>\n";
@@ -286,7 +257,7 @@ main(
     $parsedOperatingAccountType,
     $operatingAccountId,
     $audienceId,
-    $csvFile,
+    $jsonFile,
     $validateOnly,
     $parsedLoginAccountType,
     $options['login_account_id'] ?? null,
