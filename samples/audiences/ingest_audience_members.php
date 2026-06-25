@@ -21,11 +21,13 @@ require_once dirname(__DIR__, 1) . '/vendor/autoload.php';
 
 use Google\Ads\DataManager\V1\AudienceMember;
 use Google\Ads\DataManager\V1\Client\IngestionServiceClient;
+use Google\Ads\DataManager\V1\CompositeData;
 use Google\Ads\DataManager\V1\Consent;
 use Google\Ads\DataManager\V1\ConsentStatus;
 use Google\Ads\DataManager\V1\Destination;
 use Google\Ads\DataManager\V1\Encoding as DataManagerEncoding;
 use Google\Ads\DataManager\V1\IngestAudienceMembersRequest;
+use Google\Ads\DataManager\V1\IpData;
 use Google\Ads\DataManager\V1\ProductAccount;
 use Google\Ads\DataManager\V1\ProductAccount\AccountType;
 use Google\Ads\DataManager\V1\TermsOfService;
@@ -35,6 +37,7 @@ use Google\Ads\DataManager\V1\UserIdentifier;
 use Google\Ads\DataManagerUtil\Encoding;
 use Google\Ads\DataManagerUtil\Formatter;
 use Google\ApiCore\ApiException;
+use Google\Protobuf\Timestamp;
 
 /**
  * Reads the JSON member data file.
@@ -120,11 +123,70 @@ function main(
             }
         }
 
-        if (!empty($identifiers)) {
-            $userData = new UserData()->setUserIdentifiers($identifiers);
+        // Adds IP address information for each valid entry for the member.
+        $ipDatas = [];
+        $ipInfos = $memberRow['ipInfos'] ?? [];
+        foreach ($ipInfos as $ipInfo) {
+            if ($operatingAccountType !== AccountType::GOOGLE_ADS) {
+                error_log(sprintf(
+                    'Skipping IP address information for operating account type %s. '
+                    . 'Sending IP address is only supported for operating account type GOOGLE_ADS.',
+                    AccountType::name($operatingAccountType)
+                ));
+                continue;
+            }
 
-            // Adds an AudienceMember with the formatted and hashed identifiers.
-            $audienceMember = (new AudienceMember())->setUserData($userData);
+            // Trims leading and trailing whitespace from the IP address.
+            $ipAddress = trim($ipInfo['ipAddress'] ?? '');
+            if (empty($ipAddress)) {
+                // Skips the IP information from the input file since it is missing IP address, which is
+                // required.
+                error_log('Skipping IP address information with no IP address');
+                continue;
+            }
+
+            // Creates an IpData message and sets its IP address.
+            $ipData = (new IpData())->setIpAddress($ipAddress);
+
+            // Adds observe start time to the IpData if present and in the expected timestamp format.
+            $startTimeStr = trim($ipInfo['observeStartTime'] ?? '');
+            if (!empty($startTimeStr)) {
+                try {
+                    $startTime = new Timestamp();
+                    $startTime->fromDateTime(new \DateTime($startTimeStr));
+                    $ipData->setObserveStartTime($startTime);
+                } catch (\Exception $e) {
+                    error_log(sprintf("Ignoring observe start time '%s' since it can't be parsed", $startTimeStr));
+                }
+            }
+
+            // Adds observe end time to the IpData if present and in the expected timestamp format.
+            $endTimeStr = trim($ipInfo['observeEndTime'] ?? '');
+            if (!empty($endTimeStr)) {
+                try {
+                    $endTime = new Timestamp();
+                    $endTime->fromDateTime(new \DateTime($endTimeStr));
+                    $ipData->setObserveEndTime($endTime);
+                } catch (\Exception $e) {
+                    error_log(sprintf("Ignoring observe end time '%s' since it can't be parsed", $endTimeStr));
+                }
+            }
+
+            $ipDatas[] = $ipData;
+        }
+
+        if (!empty($identifiers) || !empty($ipDatas)) {
+            $compositeData = new CompositeData();
+            if (!empty($identifiers)) {
+                $userData = (new UserData())->setUserIdentifiers($identifiers);
+                $compositeData->setUserData($userData);
+            }
+            if (!empty($ipDatas)) {
+                $compositeData->setIpData($ipDatas);
+            }
+
+            // Adds an AudienceMember with the CompositeData.
+            $audienceMember = (new AudienceMember())->setCompositeData($compositeData);
             $audienceMembers[] = $audienceMember;
         }
     }
