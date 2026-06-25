@@ -133,6 +133,7 @@ function main(
                     . 'Sending IP address is only supported for operating account type GOOGLE_ADS.',
                     AccountType::name($operatingAccountType)
                 ));
+                continue;
             }
 
             // Trims leading and trailing whitespace from the IP address.
