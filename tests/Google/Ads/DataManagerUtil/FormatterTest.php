@@ -127,6 +127,7 @@ class FormatterTest extends TestCase
             'email hash' => ['alexz@example.com', hex2bin('509e933019bb285a134a9334b8bb679dff79d0ce023d529af4bd744d47b4fd8a')],
             'phone hash' => ['+18005550100', hex2bin('fb4f73a6ec5fdb7077d564cdd22c3554b43ce49168550c3b12c547b78c517b30')],
             'simple string' => ['abc', hex2bin('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')],
+            'hash with spaces' => ['1800 amphibious blvd', hex2bin('ff75e73a0e768cc1fa28a64faebbceccb562d7c05f2ffcdd8d100abad73e4579')],
         ];
     }
 
@@ -233,6 +234,107 @@ class FormatterTest extends TestCase
             ['us', 'US'],
             ['us  ', 'US'],
             ['  us  ', 'US'],
+        ];
+    }
+
+    /**
+     * @dataProvider validAddressLineProvider
+     */
+    public function testFormatAddressLineValidInputs(string $input, string $expected): void
+    {
+        $this->assertEquals($expected, $this->formatter->formatAddressLine($input));
+    }
+
+    public static function validAddressLineProvider(): array
+    {
+        return [
+            [' 1800 Amphibious Blvd.  ', '1800 amphibious blvd'],
+            ['1800 Amphibious Blvd.', '1800 amphibious blvd'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidAddressLineProvider
+     */
+    public function testFormatAddressLineInvalidInputs(?string $input): void
+    {
+        $this->expectException(($input === null) ? \Error::class : \InvalidArgumentException::class);
+        $this->formatter->formatAddressLine($input);
+    }
+
+    public static function invalidAddressLineProvider(): array
+    {
+        return [
+            'null' => [null],
+            'empty string' => [''],
+            'blank string' => ['  '],
+        ];
+    }
+
+    /**
+     * @dataProvider validCityProvider
+     */
+    public function testFormatCityValidInputs(string $input, string $expected): void
+    {
+        $this->assertEquals($expected, $this->formatter->formatCity($input));
+    }
+
+    public static function validCityProvider(): array
+    {
+        return [
+            [' Mountain View  ', 'mountain view'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidCityProvider
+     */
+    public function testFormatCityInvalidInputs(?string $input): void
+    {
+        $this->expectException(($input === null) ? \Error::class : \InvalidArgumentException::class);
+        $this->formatter->formatCity($input);
+    }
+
+    public static function invalidCityProvider(): array
+    {
+        return [
+            'null' => [null],
+            'empty string' => [''],
+            'blank string' => ['  '],
+        ];
+    }
+
+    /**
+     * @dataProvider validAdministrativeAreaProvider
+     */
+    public function testFormatAdministrativeAreaValidInputs(string $input, string $expected): void
+    {
+        $this->assertEquals($expected, $this->formatter->formatAdministrativeArea($input));
+    }
+
+    public static function validAdministrativeAreaProvider(): array
+    {
+        return [
+            [' CA  ', 'ca'],
+            [' California  ', 'california'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidAdministrativeAreaProvider
+     */
+    public function testFormatAdministrativeAreaInvalidInputs(?string $input): void
+    {
+        $this->expectException(($input === null) ? \Error::class : \InvalidArgumentException::class);
+        $this->formatter->formatAdministrativeArea($input);
+    }
+
+    public static function invalidAdministrativeAreaProvider(): array
+    {
+        return [
+            'null' => [null],
+            'empty string' => [''],
+            'blank string' => ['  '],
         ];
     }
 
@@ -407,5 +509,42 @@ class FormatterTest extends TestCase
     public function testProcessRegionCode(): void
     {
         $this->assertEquals('US', $this->formatter->processRegionCode(' us'));
+    }
+
+    public function testProcessPostalCode(): void
+    {
+        $this->assertEquals('1229-076', $this->formatter->processPostalCode(' 1229-076  '));
+    }
+
+    public function testProcessAddressLineHex(): void
+    {
+        $this->assertEquals(
+            'ff75e73a0e768cc1fa28a64faebbceccb562d7c05f2ffcdd8d100abad73e4579',
+            $this->formatter->processAddressLine(' 1800 Amphibious Blvd.  ', Encoding::Hex)
+        );
+    }
+
+    public function testProcessAddressLineBase64(): void
+    {
+        $this->assertEquals(
+            '/3XnOg52jMH6KKZPrrvOzLVi18BfL/zdjRAKutc+RXk=',
+            $this->formatter->processAddressLine(' 1800 Amphibious Blvd.  ', Encoding::Base64)
+        );
+    }
+
+    public function testProcessCity(): void
+    {
+        $this->assertEquals(
+            'mountain view',
+            $this->formatter->processCity(' Mountain View  ')
+        );
+    }
+
+    public function testProcessAdministrativeArea(): void
+    {
+        $this->assertEquals(
+            'ca',
+            $this->formatter->processAdministrativeArea(' CA  ')
+        );
     }
 }
