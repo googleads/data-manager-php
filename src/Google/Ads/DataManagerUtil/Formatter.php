@@ -103,8 +103,7 @@ class Formatter
      */
     public function hashString(string $s): string
     {
-        $s = trim($s); // PHP's hash function doesn't automatically strip whitespace like Python's `"".join(s.split())`
-        if (strlen($s) === 0) {
+        if (strlen(trim($s)) === 0) {
             throw new \InvalidArgumentException('String is blank or empty.');
         }
         // Adds 'true' to return raw binary.
@@ -155,6 +154,76 @@ class Formatter
             );
         }
         return $regionCode;
+    }
+
+    /**
+     * Returns the normalized and formatted postal code as a string.
+     *
+     * @param string $postalCode The postal code.
+     * @return string The formatted postal code.
+     * @throws \InvalidArgumentException If the provided postal code is invalid.
+     */
+    public function formatPostalCode(string $postalCode): string
+    {
+        $postalCode = trim($postalCode);
+        if (strlen($postalCode) === 0) {
+            throw new \InvalidArgumentException('Postal code is blank or empty.');
+        }
+        return $postalCode;
+    }
+
+    /**
+     * Returns the normalized and formatted location string.
+     *
+     * @param string $value The string to format.
+     * @param string $label The label used for error messages.
+     * @return string The formatted location string.
+     * @throws \InvalidArgumentException If the provided value is invalid.
+     */
+    private function formatLocationString(string $value, string $label): string
+    {
+        $value = strtolower(trim($value));
+        $value = preg_replace('/[^\w\s]|_/u', '', $value);
+        if (strlen($value) === 0) {
+            throw new \InvalidArgumentException("{$label} is blank or empty.");
+        }
+        return $value;
+    }
+
+    /**
+     * Returns the normalized and formatted address line as a string.
+     *
+     * @param string $addressLine The address line.
+     * @return string The formatted address line.
+     * @throws \InvalidArgumentException If the provided address line is invalid.
+     */
+    public function formatAddressLine(string $addressLine): string
+    {
+        return $this->formatLocationString($addressLine, 'Address line');
+    }
+
+    /**
+     * Returns the normalized and formatted city as a string.
+     *
+     * @param string $city The city.
+     * @return string The formatted city.
+     * @throws \InvalidArgumentException If the provided city is invalid.
+     */
+    public function formatCity(string $city): string
+    {
+        return $this->formatLocationString($city, 'City');
+    }
+
+    /**
+     * Returns the normalized and formatted administrative area as a string.
+     *
+     * @param string $administrativeArea The administrative area.
+     * @return string The formatted administrative area.
+     * @throws \InvalidArgumentException If the provided administrative area is invalid.
+     */
+    public function formatAdministrativeArea(string $administrativeArea): string
+    {
+        return $this->formatLocationString($administrativeArea, 'Administrative area');
     }
 
     /**
@@ -258,6 +327,51 @@ class Formatter
     public function processRegionCode(string $regionCode): string
     {
         return $this->formatRegionCode($regionCode);
+    }
+
+    /**
+     * Processes a postal code.
+     *
+     * @param string $postalCode The postal code.
+     * @return string The processed postal code.
+     */
+    public function processPostalCode(string $postalCode): string
+    {
+        return $this->formatPostalCode($postalCode);
+    }
+
+    /**
+     * Formats the address line, hashes, and encodes it.
+     *
+     * @param string $addressLine The address line.
+     * @param Encoding $encoding The encoding to use.
+     * @return string The processed address line.
+     */
+    public function processAddressLine(string $addressLine, Encoding $encoding): string
+    {
+        return $this->hashAndEncode($this->formatAddressLine($addressLine), $encoding);
+    }
+
+    /**
+     * Processes a city.
+     *
+     * @param string $city The city.
+     * @return string The processed city.
+     */
+    public function processCity(string $city): string
+    {
+        return $this->formatCity($city);
+    }
+
+    /**
+     * Processes an administrative area.
+     *
+     * @param string $administrativeArea The administrative area.
+     * @return string The processed administrative area.
+     */
+    public function processAdministrativeArea(string $administrativeArea): string
+    {
+        return $this->formatAdministrativeArea($administrativeArea);
     }
 
     private function hashAndEncode(string $normalizedString, Encoding $encoding): string
