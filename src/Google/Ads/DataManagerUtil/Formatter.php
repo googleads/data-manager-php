@@ -185,7 +185,7 @@ class Formatter
         $value = strtolower(trim($value));
         $value = preg_replace('/[^\w\s]|_/u', '', $value);
         if (strlen($value) === 0) {
-            throw new \InvalidArgumentException("$label is blank or empty.");
+            throw new \InvalidArgumentException("{$label} is blank or empty.");
         }
         return $value;
     }
