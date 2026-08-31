@@ -212,11 +212,8 @@ function main(
             echo "Response for request #{$requestCount}:\n" . json_encode(json_decode($response->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
 
             if (count($response->getFieldWarnings()) > 0) {
-                trigger_error(
-                    "Request ingested successfully, but field warnings were returned. "
-                    . "Review warning details and update your implementation as needed.",
-                    E_USER_WARNING
-                );
+                echo "Request ingested successfully, but field warnings were returned. "
+                    . "Review warning details and update your implementation as needed.\n";
             }
         }
         echo "# of requests sent: {$requestCount}\n";
