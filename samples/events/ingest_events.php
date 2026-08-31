@@ -210,6 +210,14 @@ function main(
             echo "Request:\n" . json_encode(json_decode($request->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
             $response = $client->ingestEvents($request);
             echo "Response for request #{$requestCount}:\n" . json_encode(json_decode($response->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
+
+            if (count($response->getFieldWarnings()) > 0) {
+                trigger_error(
+                    "Request ingested successfully, but field warnings were returned. "
+                    . "Review warning details and update your implementation as needed.",
+                    E_USER_WARNING
+                );
+            }
         }
         echo "# of requests sent: {$requestCount}\n";
     } catch (ApiException $e) {
