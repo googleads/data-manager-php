@@ -236,6 +236,11 @@ function main(
         // Sends the request.
         $response = $client->ingestAudienceMembers($request);
         echo "Response:\n" . json_encode(json_decode($response->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
+
+        if (count($response->getFieldWarnings()) > 0) {
+            echo "Request ingested successfully, but field warnings were returned. "
+                . "Review warning details and update your implementation as needed.\n";
+        }
     } catch (ApiException $e) {
         echo 'Error sending request: ' . $e->getMessage() . "\n";
     } finally {
