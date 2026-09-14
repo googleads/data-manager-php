@@ -1,6 +1,7 @@
-# Data Manager API Utilities and Samples for PHP
+# Data Manager API Utility Library and Samples for PHP
 
-Utilities and code samples for working with the Data Manager API and PHP.
+Utility library and code samples for working with the
+[Data Manager API](https://developers.google.com/data-manager/api) and PHP.
 
 ## Requirements
 
@@ -10,7 +11,41 @@ Utilities and code samples for working with the Data Manager API and PHP.
 
 Please refer to our [Developer
 Site](https://developers.google.com/data-manager/api/get-started/set-up-access#php)
-for documentation on how to install, configure, and use this client library.
+for documentation on how to install, configure, and use the client library.
+
+## Add dependencies to your project
+
+To use the utility library in your PHP project, install it using [Composer](https://getcomposer.org/):
+
+```shell
+composer require googleads/data-manager-util
+```
+
+### Quickstart
+
+```php
+use Google\Ads\DataManagerUtil\Formatter;
+use Google\Ads\DataManagerUtil\Encoding;
+
+$formatter = new Formatter();
+
+// Format, normalize, hash (SHA-256), and hex-encode an email address:
+$email = $formatter->processEmailAddress('User.Name@gmail.com', Encoding::Hex);
+
+// Format, normalize, hash (SHA-256), and hex-encode a phone number:
+$phone = $formatter->processPhoneNumber('+1 (800) 555-0100', Encoding::Hex);
+```
+
+## Repository structure
+
+- [`src/`](src/): Source code for the `googleads/data-manager-util` library.
+  Follow the instructions above to declare a dependency on `googleads/data-manager-util`
+  in your project. Use the utilities in the library to help with common tasks like
+  formatting, normalizing, hashing, and encoding data for Data Manager API requests.
+
+- [`samples/`](samples/): Code samples demonstrating how to construct and send
+  requests to the Data Manager API using the API client library (`googleads/data-manager`)
+  and the utility library.
 
 ## Usage
 
