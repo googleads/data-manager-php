@@ -193,18 +193,18 @@ function main(
 
     // Builds the destination for the request.
     $destination = new Destination();
-    $destination->setOperatingAccount(new ProductAccount()
+    $destination->setOperatingAccount((new ProductAccount())
         ->setAccountType($operatingAccountType)
         ->setAccountId($operatingAccountId));
 
     if ($loginAccountType !== null && $loginAccountId !== null) {
-        $destination->setLoginAccount(new ProductAccount()
+        $destination->setLoginAccount((new ProductAccount())
             ->setAccountType($loginAccountType)
             ->setAccountId($loginAccountId));
     }
 
     if ($linkedAccountType !== null && $linkedAccountId !== null) {
-        $destination->setLinkedAccount(new ProductAccount()
+        $destination->setLinkedAccount((new ProductAccount())
             ->setAccountType($linkedAccountType)
             ->setAccountId($linkedAccountId));
     }
@@ -238,7 +238,7 @@ function main(
         echo "Response:\n" . json_encode(json_decode($response->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
 
         if (count($response->getFieldWarnings()) > 0) {
-            echo "Request ingested successfully, but field warnings were returned. "
+            echo 'Request ingested successfully, but field warnings were returned. '
                 . "Review warning details and update your implementation as needed.\n";
         }
     } catch (ApiException $e) {

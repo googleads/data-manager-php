@@ -15,7 +15,7 @@
         "source": "https://github.com/googleads/data-manager-php"
     },
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.2"
     },
     "require-dev": {
         "google/cloud-tools": "dev-main",
@@ -37,6 +37,7 @@
     "prefer-stable": true,
     "scripts": {
         "test": "phpunit",
+        "lint": "php-cs-fixer check",
         "fix": "php-cs-fixer fix"
     }
 }
