@@ -5,7 +5,7 @@ Utility library and code samples for working with the
 
 ## Requirements
 
-* PHP 8.1+
+* PHP 8.2+
 
 ## Documentation
 
@@ -103,3 +103,4 @@ Contributions welcome! See the [Contributing Guide](CONTRIBUTING.md).
 ## Authors
 
 - [Josh Radcliff](https://github.com/jradcliff)
+- [Lindsey Volta](https://github.com/lindsey-volta)
