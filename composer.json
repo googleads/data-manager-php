@@ -8,7 +8,7 @@
         "ads",
         "utilities"
     ],
-    "homepage": "https://developers.google.com/data-manager",
+    "homepage": "https://developers.google.com/data-manager/api",
     "license": "Apache-2.0",
     "support": {
         "issues": "https://github.com/googleads/data-manager-php/issues",
