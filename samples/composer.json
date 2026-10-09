@@ -17,8 +17,6 @@
         "googleads/data-manager-util": "@dev"
     },
     "require-dev": {
-        "google/cloud-tools": "dev-main",
-        "squizlabs/php_codesniffer": "^3.5",
         "friendsofphp/php-cs-fixer": "^3.46"
     },
     "scripts": {
