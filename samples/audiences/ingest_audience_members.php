@@ -227,8 +227,19 @@ function main(
         // Sets validate_only to true to validate but not apply the changes in the request.
         ->setValidateOnly(true);
 
-    // Creates a client for the ingestion service.
-    $client = new IngestionServiceClient();
+    // [START create_client]
+    // Creates a client for the ingestion service. Increases the maximum metadata size to 16MB to
+    // prevent RESOURCE_EXHAUSTED errors when responses contain large error details.
+    $client = new IngestionServiceClient([
+        'transportConfig' => [
+            'grpc' => [
+                'stubOpts' => [
+                    'grpc.max_metadata_size' => 16 * 1024 * 1024,
+                ],
+            ],
+        ],
+    ]);
+    // [END create_client]
     try {
         // Logs the request.
         echo "Request:\n" . json_encode(json_decode($request->serializeToJsonString()), JSON_PRETTY_PRINT) . "\n";
